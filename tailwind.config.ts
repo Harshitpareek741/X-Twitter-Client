@@ -13,6 +13,11 @@ const config: Config = {
         "gradient-conic":
           "conic-gradient(from 180deg at 50% 50%, var(--tw-gradient-stops))",
       },
+      screens: {
+        'lg': '1024px', // Customize lg breakpoint
+        'md': '955px',  // Customize md breakpoint
+        // Add more custom breakpoints here if needed
+      },
     },
   },
   plugins: [],
