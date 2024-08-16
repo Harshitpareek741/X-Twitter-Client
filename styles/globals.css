@@ -15,6 +15,9 @@
     --background-end-rgb: 0, 0, 0;
   }
 }
+.custom-textarea {
+  @apply bg-transparent border border-white/25
+}
 
 body {
   color: rgb(var(--foreground-rgb));

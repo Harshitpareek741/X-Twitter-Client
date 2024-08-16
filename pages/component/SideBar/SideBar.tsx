@@ -1,5 +1,6 @@
-import { useCurrentUser } from "@/hooks/hook";
+import { useCurrentUser } from "@/hooks/User";
 import Image from "next/image";
+import Link from "next/link";
 import { CgProfile } from "react-icons/cg";
 import { CiCircleMore } from "react-icons/ci";
 import { FaRegBookmark, FaXTwitter } from "react-icons/fa6";
@@ -11,59 +12,72 @@ import { TiMessage } from "react-icons/ti";
 export default function SideBar() {
    
 const user =  useCurrentUser() ;
-const {firstName, lastName,profilePhotoUrl}  = user.user || {};
+const {firstName, lastName,profilePhotoUrl,id}  = user.user || {};
  const Name  = firstName + " " + lastName;
 interface TwiiterSidebarButton {
   title: string;
   icon: React.ReactNode;
+  Link : string;
 }
 const SideBarIcons: TwiiterSidebarButton[] = [
   {title: "",
-    icon : <FaXTwitter />
+    icon : <FaXTwitter />,
+    Link : "/"
   },
   {
     title: "Home",
     icon: <IoHomeOutline />,
+    Link : "/"
   },
   {
     title: "Explore",
     icon: <IoSearch />,
+    Link : "/explore"
   },
   {
     title: "Notification",
     icon: <IoMdNotificationsOutline />,
+        Link : "/explore"
   },
   {
     title: "Message",
     icon: <TiMessage />,
+        Link : "/explore"
   },
   {
     title: "Grok",
     icon: <IoHomeOutline />,
+        Link : "/explore"
   },
   {
     title: "Bookmark",
     icon: <FaRegBookmark />,
+        Link : "/explore"
   },
   {
     title: "Communities",
     icon: <IoHomeOutline />,
+        Link : "/explore"
   },
   {
     title: "Premium",
     icon: <FaXTwitter />,
+    Link : "/explore"
   },
   {
     title: "Profile",
     icon: <CgProfile />,
+     Link : `/${id}`
   },
   {
     title: "more",
     icon: <CiCircleMore />,
+    Link : "/explore"
   },
   {
     title: "future",
     icon: <IoHomeOutline />,
+        Link : "/explore"
   },  
 ];
 const ProfileIcon = {
@@ -74,17 +88,19 @@ const ProfileIcon = {
       <div className="flex flex-col justify-start items-end lg:items-start">
         <div className="flex flex-col h-5/6 ">
           {SideBarIcons.map((list) => (
+            <Link href={list.Link}>
             <li className="flex flex-row mx-3 p-2 my-[2px]  lg:hover:bg-gray-900 hover:rounded-full cursor-pointer">
               <span className="text-3xl rounded-full   hover:bg-gray-900 hover:rounded-full   ">{list.icon}</span>{" "}
               <span className=" hidden lg:block px-3 font-semibold text-lg">
                 {list.title}
               </span>
             </li>
+              </Link>
           ))}
           <li className="flex flex-auto mx-3 p-1
           my-2  hover:bg-gray-900 hover:rounded-full cursor-pointer">
               <span className="rounded-full object-cover overflow-hidden  ">{ProfileIcon.icon}</span>
-              <span className="hidden lg:block px-3 font-semibold text-lg">
+              <span className="hidden lg:block px-3 font-semibold text-base">
                 {ProfileIcon.title}
               </span>
             </li>

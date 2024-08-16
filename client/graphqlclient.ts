@@ -1,5 +1,5 @@
 import { GraphQLClient, request } from "graphql-request";
-const isclient = typeof window !== undefined;
+const isclient = typeof window !== 'undefined';
 
 
 export const graphqlClient = new GraphQLClient('http://localhost:8000/graphql',{

@@ -1,0 +1,17 @@
+.hovergroup .iconcolor:hover,
+.hovergroup .dynamiccolor:hover,
+.hovergroup .iconcolor:hover ~ .dynamiccolor,
+.hovergroup .dynamiccolor:hover ~ .iconcolor,
+.hovergroup .dynamiccolor:hover + .iconcolor,
+.hovergroup .iconcolor:hover + .dynamiccolor {
+  background-color: rgba(var(--iconcolor-rgb), 0.01);
+  color: var(--iconcolor);
+}
+
+.hovergroup .dynamiccolor:hover,
+.hovergroup .iconcolor:hover ~ .dynamiccolor,
+.hovergroup .dynamiccolor:hover ~ .iconcolor,
+.hovergroup .dynamiccolor:hover + .iconcolor,
+.hovergroup .iconcolor:hover + .dynamiccolor {
+  color: var(--dynamiccolor);
+}

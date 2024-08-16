@@ -1,7 +1,6 @@
 import { graphql } from '../../gql';
 
-// GoogleAuths query is now fully typed!
-const GoogleAuths = graphql(/* GraphQL */ `
+const GoogleAuths = graphql(`
   query GoogleAuth($token: String) {
     GoogleAuthentication(token: $token),
   }
@@ -18,4 +17,26 @@ const GetUserFromContext = graphql(`
 }
   `);
 
-export  {GoogleAuths,GetUserFromContext};
+const GetUserFromId = graphql(`
+  query GetUserFromId($id: String!) {
+  GetUserFromId(id: $id) {
+    firstName,
+    lastName,
+    profilePhotoUrl,
+    createdAt,
+    id,
+     tweets {
+       content,
+       imageUrl,
+       author {
+         id,
+         firstName,
+         lastName,
+         profilePhotoUrl
+       }
+     }
+  }
+}
+  `);
+
+export  {GoogleAuths,GetUserFromContext,GetUserFromId};

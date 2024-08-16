@@ -1,13 +1,21 @@
-import { useEffect } from "react";
-import { useCurrentUser } from "@/hooks/hook";
+import { useEffect, useRef, useState } from "react";
+import { useCurrentUser } from "@/hooks/User";
 import Image from "next/image";
 import { CiImageOn } from "react-icons/ci";
 import { FaMapMarkerAlt } from "react-icons/fa";
 import { IoSearch } from "react-icons/io5";
 import { MdOutlineGifBox, MdOutlineEmojiEmotions } from "react-icons/md";
+import { useCreateTweet } from "@/hooks/Tweet";
+import { toast } from "react-toastify";
+import { graphqlClient } from "@/client/graphqlclient";
+import { GetPresignedUrl } from "@/graphql/query/Tweet";
+import axios from "axios";
+
 
 export default function InputArea() {
   const { user } = useCurrentUser();
+  const [imageUrl , setImageUrl] = useState('');
+
   interface PostButton {
     icon: React.ReactNode;
   }
@@ -40,9 +48,47 @@ export default function InputArea() {
     }
   }, []);
 
+  const [content, setContent] = useState("");
+
+  const { mutate, isPending, isSuccess } = useCreateTweet();
+
+  function handleCreateTweet() {
+    const payload = { content , imageUrl };
+    if (payload) {
+      mutate(payload);
+      setContent("");
+    }
+  }
+
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const handleButtonClick = () => {
+    fileInputRef?.current?.click();
+  }
+  const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const files = event.target.files;
+    if (files && files.length > 0) {
+      const file = files[0];
+      console.log(file.name);
+      console.log(file.type);
+      
+  
+      const url = await graphqlClient.request(GetPresignedUrl , {imageName : file.name , imagetype : file.type });
+      const presignedurl = url.getPresignurl;
+      if(!presignedurl){return toast("stop");}
+       console.log(presignedurl);
+      await axios.put(presignedurl , file , {
+        headers : {
+          'Content-Type' : file.type,
+        }
+      });
+       const link = new URL(presignedurl);
+      setImageUrl(`${link.origin}${link.pathname}`);    
+    }
+  };
+
   return (
-    <div className="grid grid-cols-9 h-auto">
-      <div className="col-span-1 object-cover mx-2">
+    <div className="grid grid-cols-9 h-auto border-b-2 border-white/20">
+      <div className="col-span-1 object-cover mx-2 my-2">
         <Image
           src={user?.profilePhotoUrl || "/na"}
           width={38}
@@ -53,23 +99,49 @@ export default function InputArea() {
       </div>
       <div className="col-span-8 ">
         <textarea
-          className="text-white w-full text-xl focus:outline-none font-normal bg-transparent"
+          className="text-white my-2 w-full text-xl focus:outline-none font-normal bg-transparent"
+          placeholder="What is happening?!"
           name="postarea"
           id="auto-resize-textarea"
-        ></textarea>
-        <div className="flex flex-row ">
-          <div className="flex flex-row  w-2/6 gap-3 justify-evenly my-4">
-          {
-            SideBarIcons.map((map)=>(
-                <div className="text-xl hover:bg-opacity-40 hover:bg-blue-900 hover:rounded-full cursor-pointer p-2">{map.icon}</div>
-            ))
-          }
+          value={content}
+          onChange={(e) => setContent(e.target.value)}
+        ></textarea>{
+         (imageUrl.length>0) &&  <Image src={imageUrl} height={120} width={190} alt="na"></Image>
+        }
+       
+        <div className="flex flex-row border-t-[1px] border-white/20">
+          <div className="flex flex-row  w-2/6 gap-3 justify-evenly my-2 ">
+            {SideBarIcons.map((map) => (
+              <div>
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/*"
+                  style={{ display: "none" }}
+                  onChange={handleFileChange}
+                />
+                <button
+                  onClick={handleButtonClick}
+                  className="text-xl hover:bg-opacity-40 hover:bg-blue-900 hover:rounded-full cursor-pointer p-2"
+                >
+                  {map.icon}
+                </button>
+              </div>
+            ))}
           </div>
           <div className="flex flex-row-reverse w-4/6 ">
-          <button className="mx-2 bg-blue-600 hover:bg-blue-700 rounded-full px-5 my-3 ">Post</button>
+            <button
+              className="mx-2 bg-blue-600 hover:bg-blue-700 rounded-full px-5 my-2 "
+              onClick={handleCreateTweet}
+              disabled={isPending}
+            >
+              Post
+            </button>
           </div>
         </div>
       </div>
     </div>
   );
 }
+
+
