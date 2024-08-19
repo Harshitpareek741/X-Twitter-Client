@@ -9,7 +9,7 @@ interface HeaderProps {
   href: string;
 }
 
-const Header : FC<HeaderProps> = ({title , subtitle,button,href}) =>{
+const Header : React.FC<HeaderProps> = ({title , subtitle,button,href}) =>{
     return (
         <div className="h-17  grid grid-cols-12  sticky top-0 ">
         

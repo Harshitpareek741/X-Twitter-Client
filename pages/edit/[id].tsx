@@ -8,7 +8,7 @@ import Link from "next/link";
 import { FaArrowLeft } from "react-icons/fa";
 import Header from "../component/Header/Header";
 
-const EditPage: NextPage = () => {
+const EditPage: React.FC = () => {
   const { mutate, isError } = useUpdateUser();
   const router = useRouter();
   const { id } = router.query;

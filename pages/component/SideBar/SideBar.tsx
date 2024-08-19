@@ -9,7 +9,7 @@ import { IoHomeOutline, IoSearch } from "react-icons/io5";
 import { TiMessage } from "react-icons/ti";
 
 
-export default function SideBar() {
+const  SideBar : React.FC = () => {
    
 const user =  useCurrentUser() ;
 const {firstName, lastName,profilePhotoUrl,id}  = user.user || {};
@@ -110,3 +110,5 @@ const ProfileIcon = {
     
   );
 }
+
+export default SideBar;

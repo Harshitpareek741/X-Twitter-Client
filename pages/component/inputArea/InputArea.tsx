@@ -1,5 +1,5 @@
 import axios from "axios";
-import { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { useCurrentUser } from "@/hooks/User";
 import Image from "next/image";
 import { CiImageOn } from "react-icons/ci";
@@ -11,8 +11,7 @@ import { toast } from "react-toastify";
 import { graphqlClient } from "@/client/graphqlclient";
 import { GetAllTweets, GetPresignedUrl } from "@/graphql/query/qTweet";
 
-
-export default function InputArea() {
+const InputArea : React.FC = () => {
   const { user } = useCurrentUser();
   const [imageUrl, setImageUrl] = useState("");
   const [text, setText] = useState("");
@@ -152,3 +151,5 @@ export default function InputArea() {
     </div>
   );
 }
+
+export default InputArea;

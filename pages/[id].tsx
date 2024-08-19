@@ -21,7 +21,7 @@ interface ProfilePageInterface {
   userInfo?: User;
 }
 
-const ProfilePage: NextPage<ProfilePageInterface> = (props) => {
+const ProfilePage: React.FC<ProfilePageInterface> = (props) => {
   const [followersCount, setFollowersCount] = useState(props.userInfo?.followers?.length || 0);
   const [followingCount, setFollowingCount] = useState(props.userInfo?.following?.length || 0);
   const [followed, setFollowed] = useState(0);
