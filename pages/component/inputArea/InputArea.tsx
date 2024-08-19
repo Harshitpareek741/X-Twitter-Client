@@ -1,3 +1,4 @@
+import axios from "axios";
 import { useEffect, useRef, useState } from "react";
 import { useCurrentUser } from "@/hooks/User";
 import Image from "next/image";
@@ -9,7 +10,7 @@ import { UseAllTweets, useCreateTweet } from "@/hooks/Tweet";
 import { toast } from "react-toastify";
 import { graphqlClient } from "@/client/graphqlclient";
 import { GetAllTweets, GetPresignedUrl } from "@/graphql/query/qTweet";
-import axios from "axios";
+
 
 export default function InputArea() {
   const { user } = useCurrentUser();
@@ -81,7 +82,7 @@ export default function InputArea() {
       if (!presignedurl) {
         return toast("stop");
       }
-      console.log(presignedurl);
+     
       await axios.put(presignedurl, file, {
         headers: {
           "Content-Type": file.type,
