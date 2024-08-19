@@ -125,7 +125,7 @@ const ProfilePage: React.FC<ProfilePageInterface> = (props) => {
       </div>
       <div className="flex flex-col">
         {props.userInfo?.tweets.map((tweet, index) => (
-          <FeedCard key={index} content={tweet.content} author={tweet.author} img={tweet.imageUrl || ""} tweetId={tweet.id} />
+          <FeedCard key={index} content={tweet.content} author={tweet.author as User} img={tweet.imageUrl || ""} tweetId={tweet.id} />
         ))}
       </div>
     </TwitterLayout>

@@ -24,9 +24,9 @@ const FeedCard: React.FC<FeedCardProps> = ({ content, author, img, tweetId }) =>
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
 
   const [likes, setLikes] = useState<number>(0);
-  const [isliked, setisliked] = useState<number >(0);
+  const [isLiked, setIsLiked] = useState<boolean>(false);
   const [retweets, setRetweets] = useState<number>(0);
-  const [isretweets, setisRetweets] = useState<number>(0);
+  const [isRetweeted, setIsRetweeted] = useState<boolean>(false);
   const [views, setViews] = useState<number>(0);
 
   useEffect(() => {
@@ -50,18 +50,20 @@ const FeedCard: React.FC<FeedCardProps> = ({ content, author, img, tweetId }) =>
   const handleCommentClick = (): void => {
     console.log("Comment icon clicked");
   };
-  const queryClient =  useQueryClient();
+
+  const queryClient = useQueryClient();
+
   const handleRetweetClick = async () => {
     try {
-      if(!isretweets)
-     { await graphqlClient.request(createRetweet, { tweetId });
-      setRetweets((retweets) + 1)
-      setisRetweets(1);
-      queryClient.invalidateQueries({queryKey : ["all-tweets"]});}
-      else{
+      if (!isRetweeted) {
+        await graphqlClient.request(createRetweet, { tweetId });
+        setRetweets(retweets + 1);
+        setIsRetweeted(true);
+        queryClient.invalidateQueries({ queryKey: ["all-tweets"] });
+      } else {
         // await graphqlClient.request(createDisRetweet, { tweetId });
-        setRetweets((retweets) -1);
-        setisRetweets(0);
+        setRetweets(retweets - 1);
+        setIsRetweeted(false);
       }
     } catch (error) {
       console.error("Error creating retweet:", error);
@@ -70,14 +72,14 @@ const FeedCard: React.FC<FeedCardProps> = ({ content, author, img, tweetId }) =>
 
   const handleLikeClick = async () => {
     try {
-      if (!isliked) {
+      if (!isLiked) {
         await graphqlClient.request(createLikes, { tweetId });
         setLikes(likes + 1);
-        setisliked(1);
+        setIsLiked(true);
       } else {
         // await graphqlClient.request(createdisLike, { tweetId });
         setLikes(likes - 1);
-        setisliked(0);
+        setIsLiked(false);
       }
     } catch (error) {
       console.error("Error creating like:", error);
@@ -106,10 +108,10 @@ const FeedCard: React.FC<FeedCardProps> = ({ content, author, img, tweetId }) =>
   return (
     <div className="my-3 flex hover:bg-zinc-950 mx-2 border-b-[1px] border-white/20 cursor-pointer h-auto overflow-hidden">
       <div className="grid grid-cols-12">
-        <Link href={author?.id || ""}>
+        <Link href={author?.id ? `/profile/${author.id}` : "#"}>
           <div className="col-span-1 object-cover">
             <Image
-              src={author.profilePhotoUrl || ""}
+              src={author.profilePhotoUrl || "/default-profile.png"}
               height={38}
               width={38}
               alt="Profile Photo"
@@ -118,9 +120,9 @@ const FeedCard: React.FC<FeedCardProps> = ({ content, author, img, tweetId }) =>
           </div>
         </Link>
         <div className="col-span-11 mx-2">
-          <Link href={author?.id || ""}>
+          <Link href={author?.id ? `/profile/${author.id}` : "#"}>
             <div className="hover:underline">
-              {author.firstName + " " + (author.lastName || "")}
+              {author.firstName || "Anonymous"} {author.lastName || ""}
             </div>
           </Link>
           <p className="h-auto">{content}</p>
@@ -166,7 +168,7 @@ const FeedCard: React.FC<FeedCardProps> = ({ content, author, img, tweetId }) =>
                 onClick={handleRetweetClick}
               >
                 <span
-                  className={`text-lg p-1 rounded-full ${styles.iconcolor} ${isretweets && styles.colo}`}
+                  className={`text-lg p-1 rounded-full ${styles.iconcolor} ${isRetweeted && styles.colo}`}
                   style={{ "--iconcolor": "#00a48b" } as React.CSSProperties}
                 >
                   <FaRetweet />
@@ -185,7 +187,7 @@ const FeedCard: React.FC<FeedCardProps> = ({ content, author, img, tweetId }) =>
                 onClick={handleLikeClick}
               >
                 <span
-                  className={`text-lg p-1 rounded-full ${isliked && styles.colo} ${styles.iconcolor}`}
+                  className={`text-lg p-1 rounded-full ${isLiked && styles.colo} ${styles.iconcolor}`}
                   style={{ "--iconcolor": "#b8123b" } as React.CSSProperties}
                 >
                   <FaRegHeart />
