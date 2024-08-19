@@ -1,4 +1,5 @@
 import React from 'react';
+import Image from 'next/image';
 import { IoMdClose } from 'react-icons/io';
 
 interface ModalProps {
@@ -25,11 +26,15 @@ const Modal: React.FC<ModalProps> = ({ isOpen, onClose, imageUrl }) => {
         >
           <IoMdClose />
         </button>
-        <img
-          src={imageUrl}
-          alt="Full Screen"
-          className="max-w-[90vw] max-h-[90vh] object-contain"
-        />
+        <div className="relative max-w-[90vw] max-h-[90vh]">
+          <Image
+            src={imageUrl}
+            alt="Full Screen"
+            layout="fill"
+            objectFit="contain"
+            className="rounded-lg"
+          />
+        </div>
       </div>
     </div>
   );
