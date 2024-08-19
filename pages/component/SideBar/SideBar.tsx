@@ -89,7 +89,7 @@ const ProfileIcon = {
         <div className="flex flex-col h-5/6 ">
           {SideBarIcons.map((list) => (
             <Link href={list.Link}>
-            <li className="flex flex-row mx-3 p-2 my-[2px]  lg:hover:bg-gray-900 hover:rounded-full cursor-pointer">
+            <li key={list.title} className="flex flex-row mx-3 p-2 my-[2px]  lg:hover:bg-gray-900 hover:rounded-full cursor-pointer">
               <span className="text-3xl rounded-full   hover:bg-gray-900 hover:rounded-full   ">{list.icon}</span>{" "}
               <span className=" hidden lg:block px-3 font-semibold text-lg">
                 {list.title}
