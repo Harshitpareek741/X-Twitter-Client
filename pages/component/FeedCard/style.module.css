@@ -15,3 +15,6 @@
 .hovergroup .iconcolor:hover + .dynamiccolor {
   color: var(--dynamiccolor);
 }
+.colo{
+  color : var(--iconcolor)
+}

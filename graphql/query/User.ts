@@ -1,11 +1,13 @@
 import { graphql } from '../../gql';
 
 const GoogleAuths = graphql(`
+    #graphql
   query GoogleAuth($token: String) {
     GoogleAuthentication(token: $token),
   }
 `);
 const GetUserFromContext = graphql(`
+    #graphql
  query GetUserFromContext {
   GetUserFromContext {
      id,
@@ -18,6 +20,7 @@ const GetUserFromContext = graphql(`
   `);
 
 const GetUserFromId = graphql(`
+    #graphql
   query GetUserFromId($id: String!) {
   GetUserFromId(id: $id) {
     firstName,
@@ -25,6 +28,14 @@ const GetUserFromId = graphql(`
     profilePhotoUrl,
     createdAt,
     id,
+    followers {
+        firstName,
+        profilePhotoUrl
+      },
+      following {
+        firstName,
+        profilePhotoUrl,
+      }
      tweets {
        content,
        imageUrl,
@@ -38,5 +49,6 @@ const GetUserFromId = graphql(`
   }
 }
   `);
+
 
 export  {GoogleAuths,GetUserFromContext,GetUserFromId};

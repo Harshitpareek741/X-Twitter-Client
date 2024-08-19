@@ -1,7 +1,15 @@
 import Link from "next/link";
+import { FC } from "react";
 import { FaArrowLeft } from "react-icons/fa6";
 
-export default function Header({title , subtitle,button,href}){
+interface HeaderProps {
+  title: string;
+  subtitle: string;
+  button: string;
+  href: string;
+}
+
+const Header : FC<HeaderProps> = ({title , subtitle,button,href}) =>{
     return (
         <div className="h-17  grid grid-cols-12  sticky top-0 ">
         
@@ -15,10 +23,13 @@ export default function Header({title , subtitle,button,href}){
           <h2 className="font-bold text-xl">{title}</h2>
           <p className="text-sm opacity-40">{subtitle}</p>
         </div>
-        <form action={`${href}`}></form>
+        <form action={`${href}`}>
         <button className="col-span-2 -mx-1 text-black text-lg my-2 bg-white rounded-full px-2 font-semibold ">
           {button}
         </button>
+        </form>
       </div>
     )
 }
+
+export default Header;

@@ -1,65 +1,104 @@
 import Image from "next/image";
-import React from "react";
-import img1 from "./pexels-pixabay-60597.jpg";
+import React, { useState, useEffect } from "react";
 import { FaRegComment, FaRegHeart } from "react-icons/fa";
 import { FaRetweet } from "react-icons/fa6";
 import { IoStatsChartOutline } from "react-icons/io5";
 import styles from "./style.module.css";
 import { User } from "@/gql/graphql";
 import Link from "next/link";
-import { useState } from "react";
-import Modal from "./Modal"; // Adjust the path as necessary
+import Modal from "./Modal";
+import { graphqlClient } from "@/client/graphqlclient";
+import { GetLikes, GetRetweet, GetViews } from "@/graphql/query/qTweet";
+import { createLikes, createRetweet, createViews } from "@/graphql/mutation/Mutequer";
+import { QueryClient, useQueryClient } from "@tanstack/react-query";
 
 interface FeedCardProps {
   content: string;
   author: User;
   img: string;
+  tweetId: string;
 }
 
-const FeedCard: React.FC<FeedCardProps> = ({ content, author, img }) => {
-  interface PostButton {
-    cnt: string;
-    icon: React.ReactNode;
-    color: string;
-  }
-
-  const PostIcon: PostButton[] = [
-    {
-      cnt: "23",
-      icon: <FaRegComment />,
-      color: "#009bff",
-    },
-    {
-      cnt: "447",
-      icon: <FaRetweet />,
-      color: "#00a48b",
-    },
-    {
-      cnt: "1.8k",
-      icon: <FaRegHeart />,
-      color: "#b8123b",
-    },
-    {
-      cnt: "19k",
-      icon: <IoStatsChartOutline />,
-      color: "#009bff",
-    },
-  ];
-  interface CustomCSSProperties extends React.CSSProperties {
-    "--dynamiccolor"?: string;
-    "--iconcolor"?: string;
-  }
+const FeedCard: React.FC<FeedCardProps> = ({ content, author, img, tweetId }) => {
   const [modalIsOpen, setModalIsOpen] = useState(false);
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
 
-  const imgs = img;
+  const [likes, setLikes] = useState<number>(0);
+  const [isliked, setisliked] = useState<number >(0);
+  const [retweets, setRetweets] = useState<number>(0);
+  const [isretweets, setisRetweets] = useState<number>(0);
+  const [views, setViews] = useState<number>(0);
 
-  const openModal = (imageUrl: string) => {
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const likesData = await graphqlClient.request(GetLikes, { tweetId });
+        const retweetsData = await graphqlClient.request(GetRetweet, { tweetId });
+        const viewsData = await graphqlClient.request(GetViews, { tweetId });
+
+        setLikes(likesData.getLikes || 0);
+        setRetweets(retweetsData.getRetweet || 0);
+        setViews(viewsData.getViews || 0);
+      } catch (error) {
+        console.error("Error fetching data:", error);
+      }
+    };
+
+    fetchData();
+  }, [tweetId]);
+
+  const handleCommentClick = (): void => {
+    console.log("Comment icon clicked");
+  };
+  const queryClient =  useQueryClient();
+  const handleRetweetClick = async () => {
+    try {
+      if(!isretweets)
+     { await graphqlClient.request(createRetweet, { tweetId });
+      setRetweets((retweets) + 1)
+      setisRetweets(1);
+      queryClient.invalidateQueries({queryKey : ["all-tweets"]});}
+      else{
+        // await graphqlClient.request(createDisRetweet, { tweetId });
+        setRetweets((retweets) -1);
+        setisRetweets(0);
+      }
+    } catch (error) {
+      console.error("Error creating retweet:", error);
+    }
+  };
+
+  const handleLikeClick = async () => {
+    try {
+      if (!isliked) {
+        await graphqlClient.request(createLikes, { tweetId });
+        setLikes(likes + 1);
+        setisliked(1);
+      } else {
+        // await graphqlClient.request(createdisLike, { tweetId });
+        setLikes(likes - 1);
+        setisliked(0);
+      }
+    } catch (error) {
+      console.error("Error creating like:", error);
+    }
+  };
+
+  const handleViewClick = async () => {
+    try {
+      await graphqlClient.request(createViews, { tweetId });
+      setViews((prevViews) => (prevViews || 0) + 1);
+    } catch (error) {
+      console.error("Error creating view:", error);
+    }
+  };
+
+  const openModal = (imageUrl: string): void => {
     setSelectedImage(imageUrl);
     setModalIsOpen(true);
   };
 
-  const closeModal = () => {
+  const closeModal = (): void => {
     setModalIsOpen(false);
     setSelectedImage(null);
   };
@@ -73,22 +112,22 @@ const FeedCard: React.FC<FeedCardProps> = ({ content, author, img }) => {
               src={author.profilePhotoUrl || ""}
               height={38}
               width={38}
-              alt="na"
+              alt="Profile Photo"
               className="rounded-full"
             />
           </div>
         </Link>
-        <div className="col-span-11 mx-2 ">
+        <div className="col-span-11 mx-2">
           <Link href={author.id}>
             <div className="hover:underline">
-              {author.firstName + " " + author.lastName}
+              {author.firstName + " " + (author.lastName || "")}
             </div>
           </Link>
           <p className="h-auto">{content}</p>
           <div>
             {img && (
-              <div onClick={() => openModal(imgs)}>
-                <Image src={imgs} height={130} width={160} alt="Thumbnail" />
+              <div onClick={() => openModal(img)}>
+                <Image src={img} height={130} width={160} alt="Thumbnail" />
                 <Modal
                   isOpen={modalIsOpen}
                   onClose={closeModal}
@@ -102,27 +141,81 @@ const FeedCard: React.FC<FeedCardProps> = ({ content, author, img }) => {
             <div
               className={`flex flex-row w-5/6 justify-between my-2 items-start ${styles.hovergroup}`}
             >
-              {PostIcon.map((list) => (
-                <li
-                  key={list.cnt}
-                  className="flex flex-row group cursor-pointer transition duration-100 ease-in"
+              {/* Comment Icon */}
+              <li
+                className="flex flex-row group cursor-pointer transition duration-100 ease-in"
+                onClick={handleCommentClick}
+              >
+                <span
+                  className={`text-lg p-1 rounded-full ${styles.iconcolor}`}
+                  style={{ "--iconcolor": "#009bff" } as React.CSSProperties}
                 >
-                  <span
-                    className={`text-lg p-1 rounded-full ${styles.iconcolor}`}
-                    style={{ "--iconcolor": list.color } as CustomCSSProperties}
-                  >
-                    {list.icon}
-                  </span>
-                  <span
-                    className={`text-sm my-1 ${styles.dynamiccolor}`}
-                    style={
-                      { "--dynamiccolor": list.color } as CustomCSSProperties
-                    }
-                  >
-                    {list.cnt}
-                  </span>
-                </li>
-              ))}
+                  <FaRegComment />
+                </span>
+                <span
+                  className={`text-sm my-1 ${styles.dynamiccolor}`}
+                  style={{ "--dynamiccolor": "#009bff" } as React.CSSProperties}
+                >
+                  {/* Comment Count (if any) */}
+                </span>
+              </li>
+
+              {/* Retweet Icon */}
+              <li
+                className="flex flex-row group cursor-pointer transition duration-100 ease-in"
+                onClick={handleRetweetClick}
+              >
+                <span
+                  className={`text-lg p-1 rounded-full ${styles.iconcolor} ${isretweets && styles.colo}`}
+                  style={{ "--iconcolor": "#00a48b" } as React.CSSProperties}
+                >
+                  <FaRetweet />
+                </span>
+                <span
+                  className={`text-sm my-1 ${styles.dynamiccolor}`}
+                  style={{ "--dynamiccolor": "#00a48b" } as React.CSSProperties}
+                >
+                  {retweets}
+                </span>
+              </li>
+
+              {/* Like Icon */}
+              <li
+                className="flex flex-row group cursor-pointer transition duration-100 ease-in"
+                onClick={handleLikeClick}
+              >
+                <span
+                  className={`text-lg p-1 rounded-full ${isliked && styles.colo} ${styles.iconcolor}`}
+                  style={{ "--iconcolor": "#b8123b" } as React.CSSProperties}
+                >
+                  <FaRegHeart />
+                </span>
+                <span
+                  className={`text-sm my-1 ${styles.dynamiccolor}`}
+                  style={{ "--dynamiccolor": "#b8123b" } as React.CSSProperties}
+                >
+                  {likes}
+                </span>
+              </li>
+
+              {/* Views Icon */}
+              <li
+                className="flex flex-row group cursor-pointer transition duration-100 ease-in"
+                onClick={handleViewClick}
+              >
+                <span
+                  className={`text-lg p-1 rounded-full ${styles.iconcolor}`}
+                  style={{ "--iconcolor": "#009bff" } as React.CSSProperties}
+                >
+                  <IoStatsChartOutline />
+                </span>
+                <span
+                  className={`text-sm my-1 ${styles.dynamiccolor}`}
+                  style={{ "--dynamiccolor": "#009bff" } as React.CSSProperties}
+                >
+                  {views}
+                </span>
+              </li>
             </div>
           </div>
         </div>

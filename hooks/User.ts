@@ -2,7 +2,7 @@ import { graphqlClient } from "@/client/graphqlclient"
 import { graphql } from "@/gql"
 import { useMutation, useQueries, useQuery } from "@tanstack/react-query"
 import {GetUserFromContext} from '../graphql/query/User'
-import { updateUser } from "@/graphql/mutation/Tweet"
+import { updateUser } from "@/graphql/mutation/MuteUser"
 import { Payload } from "@/gql/graphql"
 
 

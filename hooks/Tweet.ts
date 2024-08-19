@@ -1,7 +1,7 @@
 import { graphqlClient } from "@/client/graphqlclient"
 import { TweetPayload } from "@/gql/graphql";
-import { CreateTweet } from "@/graphql/mutation/Tweet";
-import { GetAllTweets } from "@/graphql/query/Tweet";
+import { createTweet } from "@/graphql/mutation/Mutequer";
+import { GetAllTweets } from "@/graphql/query/qTweet";
 import { QueryClient, useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { toast } from "react-toastify";
 
@@ -19,11 +19,17 @@ export const UseAllTweets = () => {
 }
 
 export const useCreateTweet = () => {
+    const queryClient = useQueryClient();
     const mutation = useMutation({
         mutationFn : async (payload : TweetPayload) => {
-            return await graphqlClient.request(CreateTweet,{payload});
+            return await graphqlClient.request(createTweet,{payload : payload});
         },
+        onSuccess : () => {
+          queryClient.invalidateQueries({queryKey : ["all-tweets"]});
+        }
     });
 
+   
+     
     return mutation;
 }
