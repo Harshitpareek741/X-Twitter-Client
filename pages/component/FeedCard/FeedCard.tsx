@@ -14,8 +14,8 @@ import { QueryClient, useQueryClient } from "@tanstack/react-query";
 
 interface FeedCardProps {
   content: string;
-  author: User;
-  img: string;
+  author?: User; // Marked as optional
+  img?: string;  // Marked as optional
   tweetId: string;
 }
 
@@ -111,7 +111,7 @@ const FeedCard: React.FC<FeedCardProps> = ({ content, author, img, tweetId }) =>
         <Link href={author?.id ? `/profile/${author.id}` : "#"}>
           <div className="col-span-1 object-cover">
             <Image
-              src={author.profilePhotoUrl || "/default-profile.png"}
+              src={author?.profilePhotoUrl || "/default-profile.png"}
               height={38}
               width={38}
               alt="Profile Photo"
@@ -122,22 +122,22 @@ const FeedCard: React.FC<FeedCardProps> = ({ content, author, img, tweetId }) =>
         <div className="col-span-11 mx-2">
           <Link href={author?.id ? `/profile/${author.id}` : "#"}>
             <div className="hover:underline">
-              {author.firstName || "Anonymous"} {author.lastName || ""}
+              {author?.firstName || "Anonymous"} {author?.lastName || ""}
             </div>
           </Link>
-          <p className="h-auto">{content}</p>
-          <div>
-            {img && (
-              <div onClick={() => openModal(img)}>
-                <Image src={img} height={130} width={160} alt="Thumbnail" />
-                <Modal
-                  isOpen={modalIsOpen}
-                  onClose={closeModal}
-                  imageUrl={selectedImage || ""}
-                />
-              </div>
-            )}
-          </div>
+          <p className="h-auto">{content || "No content available"}</p>
+          {img ? (
+            <div onClick={() => openModal(img)}>
+              <Image src={img} height={130} width={160} alt="Thumbnail" />
+              <Modal
+                isOpen={modalIsOpen}
+                onClose={closeModal}
+                imageUrl={selectedImage || ""}
+              />
+            </div>
+          ) : (
+            <div>No image available</div>
+          )}
 
           <div className="flex flex-row">
             <div
