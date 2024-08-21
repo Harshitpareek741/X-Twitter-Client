@@ -7,13 +7,14 @@ import { FaRegBookmark, FaXTwitter } from "react-icons/fa6";
 import { IoMdNotificationsOutline } from "react-icons/io";
 import { IoHomeOutline, IoSearch } from "react-icons/io5";
 import { TiMessage } from "react-icons/ti";
-
+import React from "react"
 
 const  SideBar : React.FC = () => {
    
 const user =  useCurrentUser() ;
 const {firstName, lastName,profilePhotoUrl,id}  = user.user || {};
- const Name  = firstName + " " + lastName;
+let Name  = firstName || "Guest" + " " + ((lastName) || "");
+
 interface TwiiterSidebarButton {
   title: string;
   icon: React.ReactNode;
@@ -81,7 +82,7 @@ const SideBarIcons: TwiiterSidebarButton[] = [
   },  
 ];
 const ProfileIcon = {
-  title: (Name)  || "NA",
+  title: (Name)  || "Guest",
   icon: <Image src={profilePhotoUrl || "https://images.macrumors.com/t/n4CqVR2eujJL-GkUPhv1oao_PmI=/1600x/article-new/2019/04/guest-user-250x250.jpg"} height={50} width={50} alt="na" />
 }
   return (

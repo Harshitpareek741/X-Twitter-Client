@@ -108,7 +108,7 @@ const FeedCard: React.FC<FeedCardProps> = ({ content, author, img, tweetId }) =>
   return (
     <div className="my-3 flex hover:bg-zinc-950 mx-2 border-b-[1px] border-white/20 cursor-pointer h-auto overflow-hidden">
       <div className="grid grid-cols-12">
-        <Link href={author?.id ? `/profile/${author.id}` : "#"}>
+        <Link href={author?.id ? `/${author.id}` : "#"}>
           <div className="col-span-1 object-cover">
             <Image
               src={author?.profilePhotoUrl || "/default-profile.png"}
@@ -120,7 +120,7 @@ const FeedCard: React.FC<FeedCardProps> = ({ content, author, img, tweetId }) =>
           </div>
         </Link>
         <div className="col-span-11 mx-2">
-          <Link href={author?.id ? `/profile/${author.id}` : "#"}>
+          <Link href={author?.id ? `/${author.id}` : "#"}>
             <div className="hover:underline">
               {author?.firstName || "Anonymous"} {author?.lastName || ""}
             </div>

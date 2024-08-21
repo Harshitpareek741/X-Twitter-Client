@@ -19,6 +19,7 @@ const Home : React.FC<Tweetsinterface> = () => {
   return (
     <TwitterLayout>
       <InputArea />
+      
       {allTweets?.map((list) =>
         list?.author ? (
           <FeedCard key={list.id} content={list.content || ""} author={list?.author as User} img = {list.imageUrl || ""} tweetId={list.id} />

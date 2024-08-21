@@ -37,12 +37,13 @@ const EditPage: React.FC = () => {
 
   return (
     <TwitterLayout>
-      <div className="overflow-hidden mx-3">
+      <div className="h-full w-full flex flex-col justify-center items-center ">
+      <div className="overflow-hidden mx-3 flex  ">
       <Header title={"Edit Profile"} subtitle={""} button={"Save"} href={`/${id}`}/>
       </div>
      
     
-      <div className="flex flex-col my-9 gap-6 max-w-lg mx-3 overflow-hidden">
+      <div className="flex flex-col my-9 gap-6 max-w-lg mx-3 overflow-hidden w-full">
         
         <textarea
           className="custom-textarea p-4 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-300"
@@ -89,6 +90,7 @@ const EditPage: React.FC = () => {
         {isError && (
           <p className="text-red-500 mt-4 text-center">There was an error updating your profile. Please try again.</p>
         )}
+      </div>
       </div>
     </TwitterLayout>
   );

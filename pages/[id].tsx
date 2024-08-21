@@ -24,7 +24,7 @@ interface ProfilePageInterface {
 const ProfilePage: React.FC<ProfilePageInterface> = (props) => {
   const [followersCount, setFollowersCount] = useState(props.userInfo?.followers?.length || 0);
   const [followingCount, setFollowingCount] = useState(props.userInfo?.following?.length || 0);
-  const [followed, setFollowed] = useState(0);
+  const [followed, setFollowed] = useState(false);
 
   const user = useCurrentUser();
   const isCurrentUser = user.data?.GetUserFromContext?.id === props.userInfo?.id;
@@ -34,9 +34,9 @@ const ProfilePage: React.FC<ProfilePageInterface> = (props) => {
   // Check if the current user is already following the profile user
   useEffect(() => {
     if (props.userInfo?.followers.some(follower => follower?.id === from)) {
-      setFollowed(1);
+      setFollowed(true);
     } else {
-      setFollowed(0);
+      setFollowed(false);
     }
   }, [props.userInfo, from]);
 
@@ -61,13 +61,13 @@ const ProfilePage: React.FC<ProfilePageInterface> = (props) => {
   const handleFollowUser = async () => {
     await graphqlClient.request(FollowUser, { from, to });
     setFollowersCount((prev) => prev + 1); 
-    setFollowed(1);
+    setFollowed(true);
   };
 
   const handleUnfollowUser = async () => {
     await graphqlClient.request(UnfollowUser, { from, to });
     setFollowersCount((prev) => Math.max(0, prev - 1)); 
-    setFollowed(0);
+    setFollowed(false);
   };
 
   return (
@@ -84,7 +84,7 @@ const ProfilePage: React.FC<ProfilePageInterface> = (props) => {
               alt="Profile Photo"
             />
           </div>
-          <div className="col-span-8 flex flex-row justify-end gap-3 mt-16 mb-9">
+          <div className="col-span-8 flex flex-row justify-end gap-3 mt-16 mb-9 mx-4">
             {!followed && (
               <button hidden={isCurrentUser} onClick={handleFollowUser} className="-mx-1 text-black text-lg my-2 bg-white rounded-full px-2 font-semibold">
                 Follow
