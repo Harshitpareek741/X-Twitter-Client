@@ -3,7 +3,7 @@ import type { CodegenConfig } from '@graphql-codegen/cli';
 
 const config: CodegenConfig = {
   overwrite: true,
-  schema: "https://x-twitter-server.onrender.com/graphql",
+  schema: "https://x-twitter-server-2.onrender.com/graphql",
   documents: "**/*.{tsx,ts}", 
   ignoreNoDocuments : false,
   generates: {
