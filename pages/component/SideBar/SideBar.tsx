@@ -31,35 +31,36 @@ const SideBarIcons: TwiiterSidebarButton[] = [
     Link : "/"
   },
   {
+    title: "Message",
+    icon: <TiMessage />,
+        Link : "/message"
+  },
+  {
     title: "Explore",
     icon: <IoSearch />,
     Link : "/explore"
   },
-  {
-    title: "Notification",
-    icon: <IoMdNotificationsOutline />,
-        Link : "/explore"
-  },
-  {
-    title: "Message",
-    icon: <TiMessage />,
-        Link : "/explore"
-  },
-  {
-    title: "Grok",
-    icon: <IoHomeOutline />,
-        Link : "/explore"
-  },
-  {
-    title: "Bookmark",
-    icon: <FaRegBookmark />,
-        Link : "/explore"
-  },
-  {
-    title: "Communities",
-    icon: <IoHomeOutline />,
-        Link : "/explore"
-  },
+  // {
+  //   title: "Notification",
+  //   icon: <IoMdNotificationsOutline />,
+  //       Link : "/explore"
+  // },
+
+  // {
+  //   title: "Grok",
+  //   icon: <IoHomeOutline />,
+  //       Link : "/explore"
+  // },
+  // {
+  //   title: "Bookmark",
+  //   icon: <FaRegBookmark />,
+  //       Link : "/explore"
+  // },
+  // {
+  //   title: "Communities",
+  //   icon: <IoHomeOutline />,
+  //       Link : "/explore"
+  // },
   {
     title: "Premium",
     icon: <FaXTwitter />,
@@ -75,11 +76,11 @@ const SideBarIcons: TwiiterSidebarButton[] = [
     icon: <CiCircleMore />,
     Link : "/explore"
   },
-  {
-    title: "future",
-    icon: <IoHomeOutline />,
-        Link : "/explore"
-  },  
+  // {
+  //   title: "future",
+  //   icon: <IoHomeOutline />,
+  //       Link : "/explore"
+  // },  
 ];
 const ProfileIcon = {
   title: (Name)  || "Guest",
@@ -98,14 +99,14 @@ const ProfileIcon = {
             </li>
               </Link>
           ))}
-          <li className="flex flex-auto mx-3 p-1
-          my-2  hover:bg-gray-900 hover:rounded-full cursor-pointer">
-              <span className="rounded-full object-cover overflow-hidden  ">{ProfileIcon.icon}</span>
-              <span className="hidden lg:block px-3 font-semibold text-base">
+          <div className="flex flex-row mx-3 ">
+          <span className="rounded-full object-cover p-2 overflow-hidden ">{ProfileIcon.icon}</span>
+          <span className="hidden lg:block px-3 font-semibold text-base">
                 {ProfileIcon.title}
               </span>
-            </li>
-        
+          </div>
+            
+     
         </div>
       </div>
     

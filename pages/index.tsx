@@ -8,6 +8,7 @@ import { graphqlClient } from "@/client/graphqlclient";
 import { GetAllTweets } from "@/graphql/query/qTweet";
 import React from "react";
 import { Tweet, User } from "@/gql/graphql";
+import { useCurrentUser } from "@/hooks/User";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -16,13 +17,16 @@ interface Tweetsinterface{
 }
 const Home : React.FC<Tweetsinterface> = () => {
   const allTweets = UseAllTweets().data;
+  const user = useCurrentUser();
+
+  const id = user.data?.GetUserFromContext?.id || "nan";
   return (
     <TwitterLayout>
       <InputArea />
       
       {allTweets?.map((list) =>
         list?.author ? (
-          <FeedCard key={list.id} content={list.content || ""} author={list?.author as User} img = {list.imageUrl || ""} tweetId={list.id} />
+          <FeedCard key={list.id} content={list.content || ""} author={list?.author as User} img = {list.imageUrl || ""} tweetId={list.id} userId = {id}/>
         ) : "null"
       )}
     </TwitterLayout>

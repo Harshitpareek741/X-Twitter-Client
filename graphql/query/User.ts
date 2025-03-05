@@ -51,4 +51,17 @@ const GetUserFromId = graphql(`
   `);
 
 
-export  {GoogleAuths,GetUserFromContext,GetUserFromId};
+const GetAllUsers = graphql(`
+  #graphql
+query GetAllUsers {
+  GetAllUsers {
+    firstName
+    id
+    lastName
+    profilePhotoUrl
+  }
+}
+`);
+
+
+export  {GoogleAuths,GetUserFromContext,GetUserFromId,GetAllUsers};
