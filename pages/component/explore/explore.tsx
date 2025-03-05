@@ -1,4 +1,5 @@
 import React from "react";
+import Link from "next/link";
 
 const RightColumn: React.FC = () => {
   return (
@@ -10,7 +11,6 @@ const RightColumn: React.FC = () => {
           placeholder="Search"
           className="w-full bg-[#202327] text-gray-100 placeholder-gray-400 rounded-full py-2 pl-10 pr-4 focus:outline-none"
         />
-        {/* <FaSearch className="absolute top-1/2 left-4 -translate-y-1/2 text-gray-400" /> */}
       </div>
 
       {/* Subscribe to Premium Card */}
@@ -19,24 +19,27 @@ const RightColumn: React.FC = () => {
         <p className="text-sm text-gray-400">
           Subscribe to unlock new features and if eligible, receive a share of revenue.
         </p>
-        <button className="bg-blue-500 hover:bg-blue-600 text-white rounded-full px-4 py-2 text-sm font-semibold">
+        <Link
+          href="/premium"
+          className="block bg-blue-500 hover:bg-blue-600 text-white rounded-full px-4 py-2 text-sm font-semibold text-center"
+        >
           Subscribe
-        </button>
+        </Link>
       </div>
 
       {/* What's Happening Section */}
       <div className="bg-[#16181C] rounded-xl p-4 text-white space-y-4">
         <h2 className="text-xl font-bold">What's happening</h2>
-        
+
         {/* Example Live Event */}
         <div className="border-b border-gray-700 pb-2">
           <h3 className="text-sm font-semibold">Khloé in Wonder Land</h3>
           <p className="text-xs text-red-500 font-bold">LIVE</p>
         </div>
-        
+
         {/* Trending Items */}
         <div className="space-y-2">
-          <div className="border-b border-gray-700  pb-2">
+          <div className="border-b border-gray-700 pb-2">
             <p className="text-sm text-gray-400">Sports · Trending</p>
             <h3 className="text-sm font-semibold">CONGRESS KA BAAP ROHIT</h3>
             <p className="text-sm text-gray-400">93.7K posts</p>
@@ -52,8 +55,13 @@ const RightColumn: React.FC = () => {
             <p className="text-sm text-gray-400">166K posts</p>
           </div>
         </div>
-        
-        <button className="text-blue-400 text-sm hover:underline">Show more</button>
+
+        <Link
+          href="/explore"
+          className="block text-blue-400 text-sm hover:underline"
+        >
+          Show more
+        </Link>
       </div>
     </div>
   );
