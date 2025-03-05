@@ -5,6 +5,7 @@ import { CgProfile } from "react-icons/cg";
 import { CiCircleMore } from "react-icons/ci";
 import { FaRegBookmark, FaXTwitter } from "react-icons/fa6";
 import { IoMdNotificationsOutline } from "react-icons/io";
+import { MdOutlineLogin } from "react-icons/md";
 import { IoHomeOutline, IoSearch } from "react-icons/io5";
 import { TiMessage } from "react-icons/ti";
 import React from "react"
@@ -46,11 +47,11 @@ const SideBarIcons: TwiiterSidebarButton[] = [
   //       Link : "/explore"
   // },
 
-  // {
-  //   title: "Grok",
-  //   icon: <IoHomeOutline />,
-  //       Link : "/explore"
-  // },
+  {
+    title: "Login",
+    icon: <MdOutlineLogin />,
+        Link : "/login"
+  },
   // {
   //   title: "Bookmark",
   //   icon: <FaRegBookmark />,
