@@ -11,6 +11,7 @@ import { graphqlClient } from "@/client/graphqlclient";
 import { GetComments, GetLikes, GetRetweet, GetViews } from "@/graphql/query/qTweet";
 import { createLikes, createRetweet, createViews, createComment } from "@/graphql/mutation/Mutequer";
 import { useQueryClient } from "@tanstack/react-query";
+import { toast } from "react-toastify"; // import toast
 
 // Define your Comment interface
 interface Comment {
@@ -157,16 +158,22 @@ const FeedCard: React.FC<FeedCardProps> = ({ content, author, img, tweetId, user
   // Handle retweet action (optimistic update)
   // -------------------------
   const handleRetweetClick = async () => {
+    if (!userId) {
+      toast.error("Please login or signup first to retweet");
+      return;
+    }
     if (!isRetweeted) {
       setRetweets(retweets + 1);
       setIsRetweeted(true);
       queryClient.invalidateQueries({ queryKey: ["all-tweets"] });
       try {
         await graphqlClient.request(createRetweet, { tweetId });
+        toast.success("Retweeted successfully");
       } catch (error) {
         setRetweets(retweets);
         setIsRetweeted(false);
         console.error("Error creating retweet:", error);
+        toast.error("Please login/Sign up First");
       }
     } else {
       setRetweets(retweets - 1);
@@ -178,16 +185,22 @@ const FeedCard: React.FC<FeedCardProps> = ({ content, author, img, tweetId, user
   // Handle like action (optimistic update)
   // -------------------------
   const handleLikeClick = async () => {
+    if (!userId) {
+      toast.error("Please login or signup first to like posts");
+      return;
+    }
     if (isLiked) return;
     setLikes(likes + 1);
     setIsLiked(true);
     try {
       await graphqlClient.request(createLikes, { tweetId });
       updateLikedTweetsCache();
+      toast.success("Liked successfully");
     } catch (error) {
       setLikes(likes);
       setIsLiked(false);
       console.error("Error creating like:", error);
+      toast.error("Please login/Sign up First.");
     }
   };
 
@@ -199,7 +212,7 @@ const FeedCard: React.FC<FeedCardProps> = ({ content, author, img, tweetId, user
     try {
       await graphqlClient.request(createViews, { tweetId });
     } catch (error) {
-      console.error("Error creating view:", error);
+      console.error("Please login/Sign up First", error);
     }
   };
 
@@ -228,6 +241,10 @@ const FeedCard: React.FC<FeedCardProps> = ({ content, author, img, tweetId, user
   // -------------------------
   const handleNewCommentSubmit = async (e: FormEvent) => {
     e.preventDefault();
+    if (!userId) {
+      toast.error("Please login or signup first to comment.");
+      return;
+    }
     if (newComment.trim() === "") return;
     try {
       const response = await graphqlClient.request(createComment, {
@@ -241,8 +258,10 @@ const FeedCard: React.FC<FeedCardProps> = ({ content, author, img, tweetId, user
       if (typeof window !== "undefined") {
         localStorage.setItem(`comments-${tweetId}`, JSON.stringify(updatedComments));
       }
+      toast.success("Comment added successfully");
     } catch (error) {
       console.error("Error creating comment:", error);
+      toast.error("Please login/Sign up First");
     }
   };
 
