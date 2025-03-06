@@ -9,12 +9,23 @@ import { useCurrentUser } from "@/hooks/User";
 import { graphqlClient } from "@/client/graphqlclient";
 import { GetAllUsers } from "@/graphql/query/User";
 
+// Use an environment variable for the API base URL (assuming it's the same as the socket URL)
+const API_URL = process.env.NEXT_PUBLIC_SOCKET_URI!;
+
 // Initialize socket using the environment variable
-const socket: Socket = io(process.env.NEXT_PUBLIC_SOCKET_URI!);
+const socket: Socket = io(API_URL);
 
 type Message = {
-  name: string;
-  text: string;
+  _id?: string;
+  clientId?: string; // Unique id for optimistic update
+  senderId?: string;
+  receiverId?: string;
+  content?: string;
+  createdAt?: string;
+  updatedAt?: string;
+  // For WebSocket messages, using a simpler structure:
+  name?: string;
+  text?: string;
 };
 
 type UserType = {
@@ -24,7 +35,6 @@ type UserType = {
   profilePhotoUrl: string;
 };
 
-// Helper to highlight matching query text
 const highlightText = (text: string, query: string) => {
   if (!query) return text;
   const regex = new RegExp(`(${query})`, "gi");
@@ -43,7 +53,7 @@ const highlightText = (text: string, query: string) => {
 const generateRoomId = (a: string, b: string) => {
   let arr = [a, b];
   arr.sort();
-  return arr.join("-"); // e.g. "Kavya-na"
+  return arr.join("-"); // e.g. "user123-user456"
 };
 
 const ChatPage: NextPage = () => {
@@ -51,7 +61,9 @@ const ChatPage: NextPage = () => {
   const [selectedChat, setSelectedChat] = useState<UserType | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [message, setMessage] = useState("");
-  const [messages, setMessages] = useState<Message[]>([]);
+  // Separate arrays for historical and live messages.
+  const [mongoMessages, setMongoMessages] = useState<Message[]>([]);
+  const [wsMessages, setWsMessages] = useState<Message[]>([]);
   const [showChat, setShowChat] = useState(false);
 
   const currentUser = useCurrentUser().data?.GetUserFromContext;
@@ -59,6 +71,7 @@ const ChatPage: NextPage = () => {
   // Ref for auto-scrolling the messages container
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
+  // Fetch all users
   useEffect(() => {
     async function fetchUsers() {
       try {
@@ -92,13 +105,62 @@ const ChatPage: NextPage = () => {
       ? generateRoomId(selectedChat.id, currentUser.id || "na")
       : "";
 
+  // Function to fetch conversation messages from MongoDB (REST API)
+  const fetchMessages = async () => {
+    if (!currentUser || !selectedChat) return;
+    try {
+      // Fetch messages where currentUser sent to selectedChat
+      const resSender = await fetch(
+        `${API_URL}/api/message/custom?senderId=${currentUser.id}&receiverId=${selectedChat.id}`
+      );
+      const senderData = await resSender.json();
+      const senderMessages: Message[] = Array.isArray(senderData) ? senderData : [];
+  
+      // Fetch messages where selectedChat sent to currentUser
+      const resReceiver = await fetch(
+        `${API_URL}/api/message/custom?senderId=${selectedChat.id}&receiverId=${currentUser.id}`
+      );
+      const receiverData = await resReceiver.json();
+      const receiverMessages: Message[] = Array.isArray(receiverData) ? receiverData : [];
+  
+      // Combine both arrays and sort messages by creation time
+      const conversationMessages = [...senderMessages, ...receiverMessages];
+      conversationMessages.sort(
+        (a, b) =>
+          new Date(a.createdAt || 0).getTime() -
+          new Date(b.createdAt || 0).getTime()
+      );
+      setMongoMessages(conversationMessages);
+    } catch (error) {
+      setMongoMessages([]);
+      console.error("Error fetching messages:", error);
+    }
+  };
+  
+
+  // Initial fetch from MongoDB when chat window opens (only once per conversation)
+  useEffect(() => {
+    if (showChat && currentUser && selectedChat) {
+      fetchMessages();
+    }
+  }, [showChat, currentUser, selectedChat]);
+
+  // WebSocket effect: join room and listen for new messages
   useEffect(() => {
     if (!currentUser || !selectedChat) return;
 
     socket.emit("enterRoom", { name: currentUser.firstName, room: roomId });
 
     socket.on("message", (msg: Message) => {
-      setMessages((prev) => [...prev, msg]);
+      // Determine message text from either property
+      const msgText = msg.text || msg.content || "";
+      // Directly add incoming messages to the wsMessages state
+      setWsMessages((prev) => {
+        if (msg.clientId && prev.some((m) => m.clientId === msg.clientId)) {
+          return prev;
+        }
+        return [...prev, msg];
+      });
     });
 
     return () => {
@@ -109,12 +171,55 @@ const ChatPage: NextPage = () => {
   // Auto scroll to bottom when messages update
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages]);
+  }, [mongoMessages, wsMessages]);
 
-  const sendMessage = () => {
-    if (message.trim() && currentUser) {
-      socket.emit("message", { name: currentUser.firstName, text: message });
+  // Optimistic update: update UI immediately, then call the API
+  const sendMessage = async () => {
+    if (message.trim() && currentUser && selectedChat) {
+      const tempId = "temp-" + Date.now();
+      const newMessage: Message = {
+        _id: tempId,
+        clientId: tempId,
+        senderId: currentUser.id,
+        receiverId: selectedChat.id,
+        content: message,
+        createdAt: new Date().toISOString(),
+      };
+
+      // Immediately update state with the new message
+      setWsMessages((prev) => [...prev, newMessage]);
+
+      // Emit the message via WebSocket (include clientId so others know it's ours)
+      socket.emit("message", { name: currentUser.firstName, text: message, clientId: tempId });
+
+      // Capture the message before clearing the input
+      const messageToSend = message;
       setMessage("");
+
+      // Now post the message using the REST API
+      try {
+        const response = await fetch(
+          `${API_URL}/api/message/create`,
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              senderId: currentUser.id,
+              receiverId: selectedChat.id,
+              content: messageToSend,
+            }),
+          }
+        );
+        const data = await response.json();
+        // Replace the optimistic message with the confirmed one.
+        setWsMessages((prev) =>
+          prev.map((msg) => (msg._id === tempId ? data : msg))
+        );
+      } catch (error) {
+        console.error("Error posting message:", error);
+      }
     }
   };
 
@@ -128,7 +233,6 @@ const ChatPage: NextPage = () => {
               showChat ? "hidden" : "block"
             }`}
           >
-            {/* Search Bar */}
             <div className="flex items-center bg-opacity-55 bg-gray-900 p-2 rounded-md mb-4">
               <FiSearch className="text-gray-400 ml-2" />
               <input
@@ -139,8 +243,6 @@ const ChatPage: NextPage = () => {
                 className="bg-transparent outline-none text-white px-2 w-full"
               />
             </div>
-
-            {/* Chat List */}
             <div className="flex-1 overflow-y-auto">
               {filteredUsers.map((chat) => {
                 const fullName = `${chat.firstName} ${chat.lastName}`.trim();
@@ -166,9 +268,7 @@ const ChatPage: NextPage = () => {
                       <h3 className="font-semibold">
                         {highlightText(fullName, searchTerm)}
                       </h3>
-                      <p className="text-sm text-gray-400">
-                        Last message: Hello!
-                      </p>
+                      <p className="text-sm text-gray-400">Last message: Hello!</p>
                     </div>
                     <div className="text-xs text-gray-500">5 mins ago</div>
                   </div>
@@ -183,53 +283,60 @@ const ChatPage: NextPage = () => {
               !showChat ? "hidden" : "block"
             }`}
           >
-            {/* Header */}
-            <header className="p-4 flex items-center bg-gray-900">
-              <button className="mr-2" onClick={() => setShowChat(false)}>
-                <FiArrowLeft className="text-xl" />
-              </button>
-              <h2 className="font-semibold">
-                {selectedChat ? selectedChat.firstName : ""}
-              </h2>
-              <FiMoreVertical className="text-xl ml-auto cursor-pointer" />
+            <header className="p-4 flex flex-col bg-gray-900">
+              <div className="flex items-center">
+                <button className="mr-2" onClick={() => setShowChat(false)}>
+                  <FiArrowLeft className="text-xl" />
+                </button>
+                <h2 className="font-semibold">
+                  {selectedChat ? selectedChat.firstName : ""}
+                </h2>
+                <FiMoreVertical className="text-xl ml-auto cursor-pointer" />
+              </div>
             </header>
 
-            {/* Messages Area */}
             <div className="flex-1 p-4 min-h-0 overflow-y-auto">
-              {messages.length === 0 ? (
-                <>
-                  <p className="bg-gray-700 p-3 rounded-lg w-max max-w-xs">
-                    Hello 👋
-                  </p>
-                  <p className="bg-green-900 p-3 rounded-lg w-max max-w-xs ml-auto mt-2">
-                    Hi! How are you?
-                  </p>
-                </>
-              ) : (
-                messages.map((msg, index) => (
+              {mongoMessages.length > 0 &&
+                mongoMessages.map((msg, index) => (
                   <div
-                    key={index}
+                    key={`mongo-${index}`}
                     className={`mb-2 ${
-                      msg.name === currentUser?.firstName ? "text-right" : "text-left"
+                      msg.senderId === currentUser?.id ? "text-right" : "text-left"
                     }`}
                   >
                     <p
                       className={`p-3 rounded-lg inline-block ${
-                        msg.name === currentUser?.firstName
+                        msg.senderId === currentUser?.id
                           ? "bg-green-900"
                           : "bg-zinc-900"
                       }`}
                     >
-                      {msg.text}
+                      {msg.text || msg.content}
                     </p>
                   </div>
-                ))
-              )}
-              {/* Dummy element for auto-scrolling */}
+                ))}
+              {wsMessages.length > 0 &&
+                wsMessages.map((msg, index) => (
+                  <div
+                    key={`ws-${index}`}
+                    className={`mb-2 ${
+                      msg.senderId === currentUser?.id ? "text-right" : "text-left"
+                    }`}
+                  >
+                    <p
+                      className={`p-3 rounded-lg inline-block ${
+                        msg.senderId === currentUser?.id
+                          ? "bg-green-900"
+                          : "bg-zinc-900"
+                      }`}
+                    >
+                      {msg.text || msg.content}
+                    </p>
+                  </div>
+                ))}
               <div ref={messagesEndRef} />
             </div>
 
-            {/* Footer / Chat Input */}
             <footer className="p-4 flex bg-opacity-55 items-center border border-1 border-white border-opacity-20">
               <BsEmojiSmile className="text-xl cursor-pointer bg-opacity-55 text-gray-400" />
               <input
